@@ -120,18 +120,7 @@ class DashboardCard extends StatelessWidget {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 // Page de Connexion
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -278,18 +267,6 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 // Page d'Inscription
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -307,7 +284,8 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController confirmPasswordController = TextEditingController();
 
   Future<void> inscrireUtilisateur() async {
-    final String apiUrl = 'http://10.0.2.2:3000/inscription';
+  
+  final String apiUrl = 'http://10.0.2.2:3000/inscription';
 
   final response = await http.post(
     Uri.parse(apiUrl),

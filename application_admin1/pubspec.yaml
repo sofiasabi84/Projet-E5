@@ -31,6 +31,7 @@ dependencies:
   http: ^0.13.6
   flutter:
     sdk: flutter
+  carousel_slider: ^4.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -54,10 +55,18 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-   - asset/cosmeticc.jpg
-   - asset/rose.jpg
-   - asset/product.jpg
-   - asset/fdcrose.jpg
+    - asset/
+  #  - asset/cosmeticc.jpg
+  #  - asset/rose.jpg
+  #  - asset/product.jpg
+  #  - asset/fdcrose.jpg
+  #  - asset/yves.jpg
+  #  - asset/ritual.jpg
+  #  - asset/kleo.jpg
+  #  - asset/kiko.JPG
+  #  - asset/este.jpg
+  #  - asset/dior.jpg
+
   
 
   # The following line ensures that the Material Icons font is
