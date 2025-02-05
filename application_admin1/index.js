@@ -14,7 +14,7 @@ const db = mysql.createConnection({
   host: '10.52.2.100', // Remplacez par l'IP de votre serveur MySQL
   user: 'sofia',         // Nom d'utilisateur de la base de données
   password: 'sofia',     // Mot de passe de la base de données
-  database: 'administrateur'            // Nom de la base de données
+  database: 'cosmetic'            // Nom de la base de données
 });
 
 // Connexion à MySQL
@@ -29,7 +29,7 @@ db.connect((err) => {
 
 // verifier la connexion à la base de données
 app.get('/user', (req, res) => {
-  const sql = 'SELECT * FROM utilisateur';
+  const sql = 'SELECT * FROM utilisateuradmin';
   db.query(sql, (err, results) => {
     if (err) {
       return res.status(500).send(err);
@@ -45,7 +45,7 @@ app.post('/inscription', async (req, res) => {
   try {
     const hashPassword = await bcrypt.hash(password, 10);
 
-    const sql ='INSERT INTO utilisateur (email, password, confirm_password, nom, prenom) VALUES (?, ?, ?, ?, ?)';
+    const sql ='INSERT INTO utilisateuradmin (email, password, confirm_password, nom, prenom) VALUES (?, ?, ?, ?, ?)';
     db.query(sql, [email, hashPassword, confirm_password, nom, prenom], (err, result) => {
       if (err) {
         return res.status(500).send(err);
@@ -64,7 +64,7 @@ app.post('/connexion', async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ message: 'Email et mot de passe requis' });
     }
-    const sql = 'SELECT * FROM `utilisateur` WHERE email = ?';
+    const sql = 'SELECT * FROM `utilisateuradmin` WHERE email = ?';
     db.query(sql, [email], async (err, results) => {
       if (err) {
         return res.status(500).send(err);
@@ -93,3 +93,4 @@ app.post('/connexion', async (req, res) => {
 app.listen(port, () => {
   console.log(`Serveur API en écoute sur http://localhost:${port}`);
 });
+ 

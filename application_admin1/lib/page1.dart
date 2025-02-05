@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -37,12 +39,11 @@ class _AccueilPageState extends State<AccueilPage> {
   ];
 
   List<Product> filteredProducts = [];
-  int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    filteredProducts = products; // Initially, all products are visible
+    filteredProducts = products;
   }
 
   void _searchProduct(String query) {
@@ -53,85 +54,102 @@ class _AccueilPageState extends State<AccueilPage> {
     });
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  Future<void> _ajouterProduit(String title, String price, String image) async {
+    final url = Uri.parse("http://ton-serveur/ajouter_produit.php");
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "nom": title,
+        "description": "Description du produit",
+        "prix": double.parse(price),
+        "image": image,
+        "stock": 10,
+        "categorie": "Beauté",
+      }),
+    );
+    if (response.statusCode == 200) {
+      print("Produit ajouté avec succès");
+    } else {
+      print("Erreur: ${response.body}");
+    }
+  }
+
+  void _ouvrirFormulaireAjout() {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController priceController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Ajouter un produit'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Nom du produit')),
+            TextField(controller: priceController, decoration: const InputDecoration(labelText: 'Prix')),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () {
+              _ajouterProduit(titleController.text, priceController.text, 'asset/default.png');
+              Navigator.pop(context);
+            },
+            child: const Text('Ajouter'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'Découvrez nos produits de beauté!',
-          style: TextStyle(
-            color: Color.fromARGB(255, 202, 21, 21),
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text('Découvrez nos produits de beauté!'),
+        actions: [
+          IconButton(icon: const Icon(Icons.add), onPressed: _ouvrirFormulaireAjout),
+        ],
       ),
-      body: _selectedIndex == 0
-          ? SingleChildScrollView(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Rechercher des produits...',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      onChanged: _searchProduct,
-                    ),
-                  ),
-                  filteredProducts.isEmpty
-                      ? const Center(child: Text('Aucun produit trouvé'))
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: filteredProducts.map((product) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: ProductCard(
-                                  image: product.image,
-                                  title: product.title,
-                                  price: product.price,
-                                ),
-                              );
-                            }).toList(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Rechercher des produits...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onChanged: _searchProduct,
+            ),
+          ),
+          Expanded(
+            child: filteredProducts.isEmpty
+                ? const Center(child: Text('Aucun produit trouvé'))
+                : ListView.builder(
+                    itemCount: filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = filteredProducts[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        child: ListTile(
+                          leading: Image.asset(product.image, width: 50, height: 50, fit: BoxFit.cover),
+                          title: Text(product.title),
+                          subtitle: Text(product.price),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {},
                           ),
                         ),
-                ],
-              ),
-            )
-          : Center(
-              child: Text(
-                'Page ${_selectedIndex == 1 ? "Panier" : "Profil"}', // Exemple de contenu
-                style: const TextStyle(fontSize: 24),
-              ),
-            ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Accueil',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Panier',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profil',
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -143,43 +161,5 @@ class Product {
   final String image;
   final String title;
   final String price;
-
   Product({required this.image, required this.title, required this.price});
-}
-
-class ProductCard extends StatelessWidget {
-  final String image;
-  final String title;
-  final String price;
-
-  const ProductCard({
-    required this.image,
-    required this.title,
-    required this.price,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      elevation: 5,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.asset(image, height: 100, width: 100, fit: BoxFit.cover),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(price, style: const TextStyle(fontSize: 14, color: Colors.pink)),
-          ),
-        ],
-      ),
-    );
-  }
 }
